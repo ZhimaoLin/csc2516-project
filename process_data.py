@@ -52,8 +52,7 @@ def create_data_summary_csv(pspi_dir, images_dir, data_summary_csv):
 
             # Write to the csv 
             row = (person_name, video_name, frame_number, pspi_score, image_path)
-            if float(pspi_score) > 0:
-                write_row_to_file(data_summary_csv, row)
+            write_row_to_file(data_summary_csv, row)
 
     return data_summary_csv
 
