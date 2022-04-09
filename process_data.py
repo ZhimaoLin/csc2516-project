@@ -3,17 +3,23 @@ import re
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
-
+# global variables
 PSPI_DIR = 'test\Frame_Labels\Frame_Labels\PSPI'
 IMAGES_DIR = 'test\Images\Images'
 DATA_SUMMARY_CSV = 'data_summary.csv'
 
 
 # Write a row to a file. The row has to be a tuple of strings
+# Input: "./data_summary.csv", ("person_name", "video_name", "frame_number", "pspi_score", "image_path"), "w"
+# output: None
 def write_row_to_file(file_path, row, mode="a"):
     with open(file_path, mode) as f:
         f.write(",".join(row) + "\n")
 
+
+# Create a data summary csv file
+# Input: 'test\Frame_Labels\Frame_Labels\PSPI', 'test\Images\Images', 'data_summary.csv'
+# output: The path to the csv file
 def create_data_summary_csv(pspi_dir, images_dir, data_summary_csv):
     # The header of the csv
     header =  ("person_name", "video_name", "frame_number", "pspi_score", "image_path")
