@@ -4,9 +4,10 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
 # global variables
-PSPI_DIR = 'test\Frame_Labels\Frame_Labels\PSPI'
-IMAGES_DIR = 'test\Images\Images'
+PSPI_DIR = 'data\Frame_Labels\Frame_Labels\PSPI'
+IMAGES_DIR = 'data\Images\Images'
 DATA_SUMMARY_CSV = 'data_summary.csv'
+
 
 
 # Write a row to a file. The row has to be a tuple of strings
@@ -18,7 +19,7 @@ def write_row_to_file(file_path, row, mode="a"):
 
 
 # Create a data summary csv file
-# Input: 'test\Frame_Labels\Frame_Labels\PSPI', 'test\Images\Images', 'data_summary.csv'
+# Input: 'data\Frame_Labels\Frame_Labels\PSPI', 'data\Images\Images', 'data_summary.csv'
 # output: The path to the csv file
 def create_data_summary_csv(pspi_dir, images_dir, data_summary_csv):
     # The header of the csv
@@ -49,6 +50,7 @@ def create_data_summary_csv(pspi_dir, images_dir, data_summary_csv):
             # Construct image paths
             image_file_name = video_name + frame_number + ".png"
             image_path = os.path.join(images_dir, person_name, video_name, image_file_name)
+            image_path = os.path.abspath(image_path)
 
             # Write to the csv 
             row = (person_name, video_name, frame_number, pspi_score, image_path)
@@ -58,13 +60,12 @@ def create_data_summary_csv(pspi_dir, images_dir, data_summary_csv):
 
 
 
+
 def main():
     data_summary_csv_path = create_data_summary_csv(PSPI_DIR, IMAGES_DIR, DATA_SUMMARY_CSV)
 
 
+
 if __name__ == "__main__":
     main()
-
-
-
 
