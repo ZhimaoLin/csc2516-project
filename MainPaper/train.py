@@ -2,18 +2,20 @@ import pandas as pd
 import cv2
 import torch
 import torch.optim as optim
-import torchvision
+from torch import nn
 from torchvision import transforms, datasets
 from pain_detector import PainDetector
 from models.comparative_model import ConvNetOrdinalLateFusion
 import matplotlib.pyplot as plt
 
 
-DATA_SUMMARY_CSV_PATH = '../data_summary.csv'
+DATA_SUMMARY_CSV_PATH = 'data_summary.csv'
 DATA_SUMMARY_HEADER =  {"person":"person_name", "video":"video_name", "frame":"frame_number", "pspi":"pspi_score", "image":"image_path"}
 
+DATA_CSV_PATH = 'data.csv'
+DATA_CSV_HEADER = ("reference_image_path", "target_image_path", "pspi_score")
 TRAIN_DATA_CSV_PATH = 'train_data.csv'
-TRAIN_DATA_CSV_HEADER = ("reference_image_path", "target_image_path", "pspi_score")
+TEST_DATA_CSV_PATH = 'test_data.csv'
 
 REFERENCE_IMAGE_SAMPLE_SIZE = 1
 BATCH_SIZE = 10
@@ -42,7 +44,7 @@ def print_opts(opts):
 ARGS = AttrDict()
 args_dict = {
     'image_size':160,
-    'number_output':7,
+    'number_output':1,
     'image_sample_size':1,
     'batch_size': 10,  
     'drop_out': 0,
@@ -73,8 +75,8 @@ class MyDataset(torch.utils.data.Dataset):
         return len(self.df)
 
     def __getitem__(self, idx):
-        reference_image_path = self.df.iloc[idx][TRAIN_DATA_CSV_HEADER[0]]
-        target_image_path = self.df.iloc[idx][TRAIN_DATA_CSV_HEADER[1]]
+        reference_image_path = self.df.iloc[idx][DATA_CSV_HEADER[0]]
+        target_image_path = self.df.iloc[idx][DATA_CSV_HEADER[1]]
         reference_image = cv2.imread(reference_image_path)
         target_image = cv2.imread(target_image_path)
 
@@ -85,6 +87,9 @@ class MyDataset(torch.utils.data.Dataset):
 
         pspi_score = self.df.iloc[idx, 2]
         output_tensor = torch.tensor(pspi_score) 
+
+        # input_tensor.requires_grad = True
+        # output_tensor.requires_grad = True
 
         return input_tensor, output_tensor
 #endregion
@@ -101,9 +106,9 @@ def write_row_to_file(file_path, row, mode="a"):
 
 
 # Create a train data csv contains ("reference_image_path", "target_image_path", "pspi_score")
-def create_data_csv(train_data_csv_path, data_summary_csv_path, ops):
+def create_data_csv(data_csv_path, data_summary_csv_path, ops):
 
-    write_row_to_file(train_data_csv_path, TRAIN_DATA_CSV_HEADER, "w")
+    write_row_to_file(data_csv_path, DATA_CSV_HEADER, "w")
     df = pd.read_csv(data_summary_csv_path)  
 
     group_by_person_name = df.groupby([DATA_SUMMARY_HEADER["person"]])
@@ -114,74 +119,30 @@ def create_data_csv(train_data_csv_path, data_summary_csv_path, ops):
         for index, row in target_group.iterrows():
             pspi_score = str(row[DATA_SUMMARY_HEADER["pspi"]])
             target_image_path = row[DATA_SUMMARY_HEADER["image"]]
-
+                
             # Randomly pick reference images
-            reference_sample_df = reference_group.sample(n=ops.image_sample_size, random_state=RANDOM_SEED)
+            reference_sample_df = reference_group.sample(n=ops.image_sample_size)
             for i, s in reference_sample_df.iterrows():
                 reference_image_path = s[DATA_SUMMARY_HEADER["image"]]
                 data = (reference_image_path, target_image_path, pspi_score)
-                write_row_to_file(train_data_csv_path, data)
+                write_row_to_file(data_csv_path, data)
+
+    # Split the data into train set and test set
+    df = pd.read_csv(data_csv_path)
+    train_df = df.sample(frac=0.8, random_state=RANDOM_SEED)
+    test_df = df.drop(train_df.index)
+
+    train_df.to_csv(TRAIN_DATA_CSV_PATH, index=False)
+    test_df.to_csv(TEST_DATA_CSV_PATH, index=False)
     
-    return train_data_csv_path
+    # return TRAIN_DATA_CSV_PATH, TEST_DATA_CSV_PATH
 
 
-# def create_input_tensor(data_df, ops):
-#     pain_detector = PainDetector(image_size=ops.image_size, checkpoint_path='checkpoints/59448122/59448122_3/model_epoch13.pt', num_outputs=ops.number_output)
+def create_data_loader(data_csv_path, pain_detector, ops):
+    dataset = MyDataset(data_csv_path, pain_detector)
+    loader = torch.utils.data.DataLoader(dataset, batch_size=ops.batch_size)
+    return loader
 
-#     input_list = []
-#     for index, row in data_df.iterrows():
-#         reference_image_path = row[TRAIN_DATA_CSV_HEADER[0]]
-#         target_image_path = row[TRAIN_DATA_CSV_HEADER[1]]
-#         reference_image = cv2.imread(reference_image_path)
-#         target_image = cv2.imread(target_image_path)
-
-#         reference_image_tensor = pain_detector.prep_image(reference_image)
-#         target_image_tensor = pain_detector.prep_image(target_image)
-
-#         frames = torch.cat([reference_image_tensor, target_image_tensor], dim=1)
-#         input_list.append(frames)
-
-#     input_tensor = torch.cat(input_list, dim=0)
-
-#     return input_tensor
-
-
-# def read_data_to_tensor(data_path, ops):
-#     df = pd.read_csv(data_path)
-
-#     train_df = df.sample(frac=0.8, random_state=RANDOM_SEED)
-#     train_pspi_df = train_df[TRAIN_DATA_CSV_HEADER[2]]
-    
-#     test_df = df.drop(train_df.index)
-#     test_pspi_df = test_df[TRAIN_DATA_CSV_HEADER[2]]
-
-#     train_input_tensor = create_input_tensor(train_df, ops)
-#     train_output_tensor = torch.tensor(train_pspi_df.values).reshape((-1, 1))
-
-#     test_input_tensor = create_input_tensor(test_df, ops)
-#     test_output_tensor = torch.tensor(test_pspi_df.values).reshape((-1, 1))
-
-#     torch.save(train_input_tensor, 'train_input_tensor.pt')
-#     torch.save(train_output_tensor, 'train_output_tensor.pt')
-#     torch.save(test_input_tensor, 'test_input_tensor.pt')
-#     torch.save(test_output_tensor, 'test_output_tensor.pt')
-
-#     return train_input_tensor, train_output_tensor, test_input_tensor, test_output_tensor
-
-
-# def create_dataloader(train_input_tensor, train_output_tensor, test_input_tensor, test_output_tensor, ops):
-#     train_input_loader = torch.utils.data.DataLoader((train_input_tensor, train_output_tensor), batch_size=ops.batch_size)
-
-#     for data in train_input_loader:
-#         print(data)
-#         break
-
-
-#     train_output_loader = torch.utils.data.DataLoader(train_output_tensor, batch_size=ops.batch_size)
-#     test_input_loader = torch.utils.data.DataLoader(test_input_tensor, batch_size=ops.batch_size)
-#     test_output_loader = torch.utils.data.DataLoader(test_output_tensor, batch_size=ops.batch_size)
-
-#     return train_input_loader, train_output_loader, test_input_loader, test_output_loader
 
 
 def create_model(ops):
@@ -197,56 +158,80 @@ def create_model(ops):
     return model
 
 
-# def train(train_input_loader, train_output_loader, ops):
-#     net = create_model(ops)
+
+def train(train_data_loader, ops):
+    net = create_model(ops)
     
-#     optimizer = optim.Adam(net.parameters(), lr=ops.learning_rate)
+    optimizer = optim.Adam(net.parameters(), lr=ops.learning_rate)
+    mse_loss = nn.MSELoss()
 
-#     for epoch in range(ops.epoch):
-#         for data in train_input_loader:
-#             pass
-    
+    for epoch in range(ops.epoch):
+        for i_batch, sample_batched in enumerate(train_data_loader):
+            # print(i_batch) 
+            # print(sample_batched[0].size(), sample_batched[1].size())
+            # plt.imshow(sample_batched[0][0][0])
+            # plt.imshow(sample_batched[0][0][1])
+
+            net.zero_grad()
+            with torch.set_grad_enabled(True):
+                X, y = sample_batched[0], sample_batched[1]
+
+                if torch.cuda.is_available():
+                    X = X.cuda().float()
+                    y = y.cuda().view((-1, 1)).float()
+                    # print(f"Move data to GPU")
+                
+
+                output = net(X, return_features=False)
 
 
+                loss = mse_loss(output, y)
+                loss.backward()
+                optimizer.step()
+
+                print(f"Batch index [{i_batch}], Loss is [{loss}]")
+
+    return net
+
+
+def evaluation(net, test_data_loader):
+    mse_loss = nn.MSELoss()
+
+    total_number_batch = 0
+    total_loss = 0
+    for i_batch, sample_batched in enumerate(test_data_loader):
+        
+        with torch.set_grad_enabled(False):
+            X, y = sample_batched[0], sample_batched[1]
+
+            if torch.cuda.is_available():
+                X = X.cuda().float()
+                y = y.cuda().view((-1, 1)).float()
+                # print(f"Move data to GPU")
+
+            output = net(X, return_features=False)
+            loss = mse_loss(output, y)
+
+            total_loss += loss
+
+        total_number_batch += 1
+
+    avg_loss = total_loss / total_number_batch
+
+    print(f"Average loss is [{avg_loss}]")
 
 
 
 def main():
     pain_detector = PainDetector(image_size=ARGS.image_size, checkpoint_path='checkpoints/59448122/59448122_3/model_epoch13.pt', num_outputs=ARGS.number_output)
 
-    train_data_path = create_data_csv(TRAIN_DATA_CSV_PATH, DATA_SUMMARY_CSV_PATH, ARGS)
-    dataset = MyDataset(TRAIN_DATA_CSV_PATH, pain_detector)
-    loader = torch.utils.data.DataLoader(dataset, batch_size=10)
-    for i_batch, sample_batched in enumerate(loader):
-        print(i_batch) 
-        print(sample_batched[0].size(), sample_batched[1].size())
-        break
+    create_data_csv(DATA_CSV_PATH, DATA_SUMMARY_CSV_PATH, ARGS)
 
-    
+    train_data_loader = create_data_loader(TRAIN_DATA_CSV_PATH, pain_detector, ARGS)
+    test_data_loader = create_data_loader(TEST_DATA_CSV_PATH, pain_detector, ARGS)
 
-    # train_input_tensor, train_output_tensor, test_input_tensor, test_output_tensor = read_data_to_tensor(TRAIN_DATA_CSV_PATH, ARGS)
-
-    # train_input_tensor = torch.load('train_input_tensor.pt')
-    # train_output_tensor = torch.load('train_output_tensor.pt')
-    # test_input_tensor = torch.load('test_input_tensor.pt')
-    # test_output_tensor = torch.load('test_output_tensor.pt')
-
-    # train_input_loader, train_output_loader, test_input_loader, test_output_loader = create_dataloader(train_input_tensor, train_output_tensor, test_input_tensor, test_output_tensor, ARGS)
-
-    # test = datasets.MNIST("", train=True, download=True, transform=transforms.Compose([transforms.ToTensor()]))
-    # loader = torch.utils.data.DataLoader(test, batch_size=10)
-
-    # for data in loader:
-    #     print(data)
-    
-
-
-    # loader = torch.utils.data.DataLoader(train_input_tensor, batch_size=batch_size)
-    # train_iter = iter(loader)
-
-    # test = train_iter.next()
-
-
+    net = train(train_data_loader, ARGS)
+    evaluation(net, test_data_loader)
 
 
 

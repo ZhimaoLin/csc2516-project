@@ -7,6 +7,7 @@ from models.comparative_model import ConvNetOrdinalLateFusion
 import numpy as np
 import cv2
 from skimage.transform import SimilarityTransform, PiecewiseAffineTransform, warp
+import matplotlib.pyplot as plt
 
 
 class PainDetector:
@@ -28,9 +29,9 @@ class PainDetector:
         self.mean_lmks = self.mean_lmks * 155 / self.mean_lmks.max()
         self.mean_lmks[:, 1] += 15
         # load model model
-        self.model = ConvNetOrdinalLateFusion(num_outputs=num_outputs)
-        self.model.load_state_dict(torch.load(checkpoint_path, map_location=self.device))
-        self.model.eval()
+        # self.model = ConvNetOrdinalLateFusion(num_outputs=num_outputs)
+        # self.model.load_state_dict(torch.load(checkpoint_path, map_location=self.device))
+        # self.model.eval()
 
     @staticmethod
     def crop_image(frame, bbox):
@@ -146,22 +147,40 @@ class PainDetector:
         image_face = image_face.reshape(1, 1, self.image_size, self.image_size).astype(np.float32)
         return torch.from_numpy(image_face) / 255
 
-    def predict_pain(self, image):
-        """
-        Main predictor function, takes an image as input and returns a float number as pain prediction
-        :param image: RGB input image, size (Height x Width x Channel)
-        :return: a float32 number, the estimated pain score
-        """
-        pain_scores = []
-        target_frame = self.prep_image(image)
-        with torch.no_grad():
-            # Gets a prediction for the target frame using every reference frame.
-            for ref_frame in self.ref_frames:
-                frames = torch.cat([target_frame, ref_frame], dim=1)
-                predictions = self.model(frames).detach().cpu().numpy()
-                pspi_predictions = predictions[0, -3:]  # The last 3 outputs predict PSPI for Dementia, Healthy, and UNBC.
-                pspi_predictions = np.clip(pspi_predictions, 0, None)  # Because PSPI >= 0
-                pain_scores.append(pspi_predictions)
-        # computes the mean of all the predictions.
-        mean_score = np.array(pain_scores).mean()
-        return mean_score
+    def test_image(self, image_path, scale_to=320):
+        image = cv2.imread(image_path)
+        # Scaling the image to reduce its width to `scale_to`.
+        # This makes sure that the run time is consistent by making sure the input image size is fixed.
+        image = cv2.resize(image, (scale_to, int(image.shape[0] * scale_to/image.shape[1])), interpolation=cv2.INTER_AREA)
+        # We need to `mean_lmks`, because `self.mean_lmks` is based on 240x320 resolution images
+        mean_lmks = self.mean_lmks * scale_to / 320
+        landmarks = self.face_detector(image)
+        if landmarks:
+            return len(landmarks) == 1
+
+        return False
+        
+
+
+    # def predict_pain(self, image):
+    #     """
+    #     Main predictor function, takes an image as input and returns a float number as pain prediction
+    #     :param image: RGB input image, size (Height x Width x Channel)
+    #     :return: a float32 number, the estimated pain score
+    #     """
+    #     pain_scores = []
+    #     target_frame = self.prep_image(image)
+    #     with torch.no_grad():
+    #         # Gets a prediction for the target frame using every reference frame.
+    #         for ref_frame in self.ref_frames:
+
+    #             # plt.imshow(ref_frame[0][0])
+
+    #             frames = torch.cat([target_frame, ref_frame], dim=1)
+    #             predictions = self.model(frames).detach().cpu().numpy()
+    #             pspi_predictions = predictions[0, -3:]  # The last 3 outputs predict PSPI for Dementia, Healthy, and UNBC.
+    #             pspi_predictions = np.clip(pspi_predictions, 0, None)  # Because PSPI >= 0
+    #             pain_scores.append(pspi_predictions)
+    #     # computes the mean of all the predictions.
+    #     mean_score = np.array(pain_scores).mean()
+    #     return mean_score
