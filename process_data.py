@@ -30,7 +30,7 @@ def create_data_summary_csv(pspi_dir, images_dir, data_summary_csv):
         for file in files:
             # Process labels
             label_path = os.path.join(root, file)
-            label_path.replace("\/", "\\")
+            label_path = label_path.replace("/", "\\")
 
             path_array = label_path.split("\\")
             person_name = path_array[4]
