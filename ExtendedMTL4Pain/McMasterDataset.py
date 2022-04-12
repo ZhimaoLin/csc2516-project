@@ -4,11 +4,12 @@ import torch
 import os
 import cv2
 import numpy as np
+import pandas as pd
 
 class McMasterDataset(Dataset):
     """ McMaster Shoulder Pain Dataset. """
 
-    def __init__(self, image_dir, label_dir, val_subj_id, test_subj_id, subset, transform=None):
+    def __init__(self, data_summary_path, image_dir, label_dir, val_subj_id, test_subj_id, subset, transform=None):
         """
         Args:
             image_dir (string): Path to the image data "UNBCMcMaster_cropped/Images0.3"
@@ -18,6 +19,8 @@ class McMasterDataset(Dataset):
             subset (string): train, val, test
             transform (callable, optional): Optional transfomr to be applied on a sample
         """
+        self.df = pd.read_csv(data_summary_path)
+
         self.seqVASpath = os.path.join(label_dir, 'Sequence_Labels','VAS')
         self.frameVASpath = os.path.join(label_dir, 'Frame_Labels','PSPI')
         self.AUpath = os.path.join(label_dir, 'Frame_Labels', 'FACS')
