@@ -41,8 +41,6 @@ def print_opts(opts):
 
 ARGS = AttrDict()
 args_dict = {
-    # 'fan_checkpoint': os.path.abspath("../shared_util/face_alignment/checkpoints/59448122/59448122_3/model_epoch13.pt"),
-    # 'standard_face_path': os.path.abspath("../shared_util/face_alignment/standard_face_68.npy"),
     'image_scale_to_before_crop': 256,
     'image_size': 160,
     'number_output':1,
