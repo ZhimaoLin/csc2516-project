@@ -50,7 +50,7 @@ args_dict = {
     'image_size': 160,
     'number_output': 1,
     'image_sample_size': 1,
-    'batch_size': 200,  
+    'batch_size': 100,  
     'drop_out': 0,
     'fc2_size': 200,
     'learning_rate': 0.001,
@@ -58,54 +58,6 @@ args_dict = {
 }
 ARGS.update(args_dict)
 #endregion
-
-'''
-#region dataset
-class MyDataset(torch.utils.data.Dataset):
-    """Construct my own dataset"""
-
-    def __init__(self, path_to_csv, pain_detector, transform=None):
-        """
-        Args:
-            path_to_csv (string): Path to the csv file
-            pain_detector (PainDetector): An object of PainDetector
-            transform (callable, optional): Optional transform to be applied on a sample.
-        """
-        self.df = pd.read_csv(path_to_csv)
-        self.pain_detector = pain_detector
-        self.transform = transform
-
-    def __len__(self):
-        return len(self.df)
-
-    def __getitem__(self, idx):
-        reference_image_path = self.df.iloc[idx][DATA_CSV_HEADER[0]]
-        target_image_path = self.df.iloc[idx][DATA_CSV_HEADER[1]]
-        reference_image = cv2.imread(reference_image_path)
-        target_image = cv2.imread(target_image_path)
-
-        reference_image_tensor = self.pain_detector.prep_image(reference_image)
-        target_image_tensor = self.pain_detector.prep_image(target_image)
-
-        input_tensor = torch.cat([reference_image_tensor, target_image_tensor], dim=1).squeeze(dim=0)
-
-        pspi_score = self.df.iloc[idx, 2]
-        output_tensor = torch.tensor(pspi_score) 
-
-        # input_tensor.requires_grad = True
-        # output_tensor.requires_grad = True
-
-        return input_tensor, output_tensor
-#endregion
-'''
-
-
-# Write a row to a file. The row has to be a tuple of strings
-# Input: "./data_summary.csv", ("person_name", "video_name", "frame_number", "pspi_score", "image_path"), "w"
-# output: None
-# def write_row_to_file(file_path, row, mode="a"):
-#     with open(file_path, mode) as f:
-#         f.write(",".join(row) + "\n")
 
 
 
@@ -204,7 +156,6 @@ def train(train_data_path, ops):
         save_path = os.path.join("./result", f"Epoch_{epoch}_loss.png")
         draw_line_chart(x_list, train_loss_for_each_batch_list, title, x_label, y_label, save_path)
 
-
         avg_loss_for_each_epoch = np.array(train_loss_for_each_batch_list).mean()
         train_loss_for_each_epoch_list.append(avg_loss_for_each_epoch)
 
@@ -239,7 +190,7 @@ def evaluation(net, test_data_loader):
             output = net(X, return_features=False)
             loss = mse_loss(output, y)
 
-            total_loss += loss
+            total_loss += loss.item()
 
         total_number_batch += 1
 
@@ -250,17 +201,8 @@ def evaluation(net, test_data_loader):
 
 
 def main():
-    # pain_detector = PainDetector(image_size=ARGS.image_size, checkpoint_path='checkpoints/59448122/59448122_3/model_epoch13.pt', num_outputs=ARGS.number_output)
-
     create_data_csv(DATA_CSV_PATH, DATA_SUMMARY_CSV_PATH, ARGS)
     split_dataset(DATA_CSV_PATH, TRAIN_DATA_CSV_PATH, TEST_DATA_CSV_PATH, RANDOM_SEED, TRAIN_FRACTION)
-
-    # MyDataset(TRAIN_DATA_CSV_PATH, ARGS)
-
-
-
-    # train_data_loader = create_data_loader(TRAIN_DATA_CSV_PATH, pain_detector, True, ARGS)
-    # test_data_loader = create_data_loader(TEST_DATA_CSV_PATH, pain_detector, True, ARGS)
 
     net = train(TRAIN_DATA_CSV_PATH, ARGS)
     evaluation(net, TEST_DATA_CSV_PATH)
