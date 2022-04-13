@@ -1,15 +1,19 @@
+import sys 
 import os
+sys.path.append(os.path.abspath("./shared_util"))
+# sys.path.append(os.path.abspath("../shared_util/"))
 import re
-from shared_util.preprocess import PreProcess
 
+from shared_util.preprocess import PreProcess
+from shared_util.util import *
 
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 # from pain_detector import PainDetector
 
 # global variables
-PSPI_DIR = './data/Frame_Labels/Frame_Labels/PSPI'
-IMAGES_DIR = './data/Images/Images'
+PSPI_DIR = './test/Frame_Labels/Frame_Labels/PSPI'
+IMAGES_DIR = './test/Images/Images'
 DATA_SUMMARY_CSV = 'data_summary.csv'
 
 
@@ -34,22 +38,12 @@ def print_opts(opts):
 
 ARGS = AttrDict()
 args_dict = {
-    # 'fan_checkpoint': os.path.abspath("../shared_util/face_alignment/checkpoints/59448122/59448122_3/model_epoch13.pt"),
-    # 'standard_face_path': os.path.abspath("../shared_util/face_alignment/standard_face_68.npy"),
     'image_scale_to_before_crop': 256,
     'image_size': 160
 }
 ARGS.update(args_dict)
 #endregion
 
-
-
-# Write a row to a file. The row has to be a tuple of strings
-# Input: "./data_summary.csv", ("person_name", "video_name", "frame_number", "pspi_score", "image_path"), "w"
-# output: None
-def write_row_to_file(file_path, row, mode="a"):
-    with open(file_path, mode) as f:
-        f.write(",".join(row) + "\n")
 
 
 # Create a data summary csv file
@@ -96,7 +90,6 @@ def create_data_summary_csv(pspi_dir, images_dir, data_summary_csv):
                 print(f"Skip image: [{image_path}]")
 
     return data_summary_csv
-
 
 
 
