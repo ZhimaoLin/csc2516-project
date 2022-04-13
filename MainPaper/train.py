@@ -46,11 +46,11 @@ args_dict = {
     'image_size':160,
     'number_output':1,
     'image_sample_size':1,
-    'batch_size': 10,  
+    'batch_size': 50,  
     'drop_out': 0,
     'fc2_size': 200,
     'learning_rate': 0.001,
-    'epoch': 5
+    'epoch': 1
 }
 ARGS.update(args_dict)
 #endregion
@@ -138,9 +138,9 @@ def create_data_csv(data_csv_path, data_summary_csv_path, ops):
     # return TRAIN_DATA_CSV_PATH, TEST_DATA_CSV_PATH
 
 
-def create_data_loader(data_csv_path, pain_detector, ops):
+def create_data_loader(data_csv_path, pain_detector, is_shuffle, ops):
     dataset = MyDataset(data_csv_path, pain_detector)
-    loader = torch.utils.data.DataLoader(dataset, batch_size=ops.batch_size)
+    loader = torch.utils.data.DataLoader(dataset, batch_size=ops.batch_size, shuffle=is_shuffle)
     return loader
 
 
@@ -165,7 +165,10 @@ def train(train_data_loader, ops):
     optimizer = optim.Adam(net.parameters(), lr=ops.learning_rate)
     mse_loss = nn.MSELoss()
 
+    train_loss_for_each_epoch_list = []
+
     for epoch in range(ops.epoch):
+        train_loss_for_each_batch_list = []
         for i_batch, sample_batched in enumerate(train_data_loader):
             # print(i_batch) 
             # print(sample_batched[0].size(), sample_batched[1].size())
@@ -186,12 +189,39 @@ def train(train_data_loader, ops):
 
 
                 loss = mse_loss(output, y)
+
+                train_loss_for_each_batch_list.append(loss)
+
                 loss.backward()
                 optimizer.step()
 
-                print(f"Batch index [{i_batch}], Loss is [{loss}]")
+                print(f"Batch index [{i_batch}], Train loss is [{loss}]")
+        
 
+        title = f"Epoch={epoch}, Train loss of each batch"
+        x_label = "Batch number"
+        draw_train_loss_chart(train_loss_for_each_batch_list, x_label, title)
+
+        train_loss_for_each_epoch_list.append()
+
+    title = "Train loss of each epoch"
+    x_label = "Epoch number"
+    draw_train_loss_chart(train_loss_for_each_epoch_list, x_label, title)
     return net
+
+
+def draw_train_loss_chart(train_loss_list, x_label, title):
+    plt.figure()
+    plt.plot(range(len(train_loss_list)), train_loss_list)
+    plt.title(title)
+    plt.xlabel(x_label)
+    plt.ylabel("Loss")
+    # plt.xticks(fontsize=14)
+    # plt.yticks(fontsize=14)
+    plt.tight_layout()
+    plt.show()
+    # plt.savefig(os.path.join(opts.checkpoint_path, "loss_plot.pdf"))
+    # plt.close()
 
 
 def evaluation(net, test_data_loader):
@@ -227,8 +257,8 @@ def main():
 
     create_data_csv(DATA_CSV_PATH, DATA_SUMMARY_CSV_PATH, ARGS)
 
-    train_data_loader = create_data_loader(TRAIN_DATA_CSV_PATH, pain_detector, ARGS)
-    test_data_loader = create_data_loader(TEST_DATA_CSV_PATH, pain_detector, ARGS)
+    train_data_loader = create_data_loader(TRAIN_DATA_CSV_PATH, pain_detector, True, ARGS)
+    test_data_loader = create_data_loader(TEST_DATA_CSV_PATH, pain_detector, True, ARGS)
 
     net = train(train_data_loader, ARGS)
     evaluation(net, test_data_loader)
