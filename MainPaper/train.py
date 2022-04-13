@@ -1,15 +1,18 @@
-import pandas as pd
-import cv2
 import torch
 import torch.optim as optim
 from torch import nn
-from torchvision import transforms, datasets
-from pain_detector import PainDetector
+import pandas as pd
+import numpy as np
+from MyDataset import MyDataset
 from models.comparative_model import ConvNetOrdinalLateFusion
+import sys 
+import os
+sys.path.append(os.path.abspath("../shared_util"))
+from util import *
 import matplotlib.pyplot as plt
 
 
-DATA_SUMMARY_CSV_PATH = 'data_summary.csv'
+DATA_SUMMARY_CSV_PATH = '../data_summary.csv'
 DATA_SUMMARY_HEADER =  {"person":"person_name", "video":"video_name", "frame":"frame_number", "pspi":"pspi_score", "image":"image_path"}
 
 DATA_CSV_PATH = 'data.csv'
@@ -17,10 +20,10 @@ DATA_CSV_HEADER = ("reference_image_path", "target_image_path", "pspi_score")
 TRAIN_DATA_CSV_PATH = 'train_data.csv'
 TEST_DATA_CSV_PATH = 'test_data.csv'
 
-REFERENCE_IMAGE_SAMPLE_SIZE = 1
-BATCH_SIZE = 10
-NUM_OUTPUT = 7
+TRAIN_FRACTION = 0.8
 RANDOM_SEED = 1
+
+
 
 #region arguments section
 class AttrDict(dict):
@@ -43,10 +46,11 @@ def print_opts(opts):
 
 ARGS = AttrDict()
 args_dict = {
-    'image_size':160,
-    'number_output':1,
-    'image_sample_size':1,
-    'batch_size': 50,  
+    'image_scale_to_before_crop': 320,
+    'image_size': 160,
+    'number_output': 1,
+    'image_sample_size': 1,
+    'batch_size': 200,  
     'drop_out': 0,
     'fc2_size': 200,
     'learning_rate': 0.001,
@@ -55,7 +59,7 @@ args_dict = {
 ARGS.update(args_dict)
 #endregion
 
-
+'''
 #region dataset
 class MyDataset(torch.utils.data.Dataset):
     """Construct my own dataset"""
@@ -93,15 +97,15 @@ class MyDataset(torch.utils.data.Dataset):
 
         return input_tensor, output_tensor
 #endregion
-
+'''
 
 
 # Write a row to a file. The row has to be a tuple of strings
 # Input: "./data_summary.csv", ("person_name", "video_name", "frame_number", "pspi_score", "image_path"), "w"
 # output: None
-def write_row_to_file(file_path, row, mode="a"):
-    with open(file_path, mode) as f:
-        f.write(",".join(row) + "\n")
+# def write_row_to_file(file_path, row, mode="a"):
+#     with open(file_path, mode) as f:
+#         f.write(",".join(row) + "\n")
 
 
 
@@ -159,7 +163,10 @@ def create_model(ops):
 
 
 
-def train(train_data_loader, ops):
+def train(train_data_path, ops):
+    train_dataset = MyDataset(train_data_path, ops)
+    train_data_loader = torch.utils.data.DataLoader(train_dataset, batch_size=ops.batch_size, shuffle=True)
+
     net = create_model(ops)
     
     optimizer = optim.Adam(net.parameters(), lr=ops.learning_rate)
@@ -168,13 +175,10 @@ def train(train_data_loader, ops):
     train_loss_for_each_epoch_list = []
 
     for epoch in range(ops.epoch):
+        print(f"Epoch {epoch+1}/{ops.epoch}")
+        print('-' * 10)
         train_loss_for_each_batch_list = []
         for i_batch, sample_batched in enumerate(train_data_loader):
-            # print(i_batch) 
-            # print(sample_batched[0].size(), sample_batched[1].size())
-            # plt.imshow(sample_batched[0][0][0])
-            # plt.imshow(sample_batched[0][0][1])
-
             net.zero_grad()
             with torch.set_grad_enabled(True):
                 X, y = sample_batched[0], sample_batched[1]
@@ -184,44 +188,37 @@ def train(train_data_loader, ops):
                     y = y.cuda().view((-1, 1)).float()
                     # print(f"Move data to GPU")
                 
-
                 output = net(X, return_features=False)
-
-
                 loss = mse_loss(output, y)
-
-                train_loss_for_each_batch_list.append(loss)
-
                 loss.backward()
                 optimizer.step()
 
-                print(f"Batch index [{i_batch}], Train loss is [{loss}]")
-        
+                train_loss_for_each_batch_list.append(loss.item())
+                print(f"Batch index [{i_batch}], Train loss is [{loss.item()}]")
 
+        
+        x_list = range(len(train_loss_for_each_batch_list))
         title = f"Epoch={epoch}, Train loss of each batch"
         x_label = "Batch number"
-        draw_train_loss_chart(train_loss_for_each_batch_list, x_label, title)
+        y_label = "Loss"
+        save_path = os.path.join("./result", f"Epoch_{epoch}_loss.png")
+        draw_line_chart(x_list, train_loss_for_each_batch_list, title, x_label, y_label, save_path)
 
-        train_loss_for_each_epoch_list.append()
 
+        avg_loss_for_each_epoch = np.array(train_loss_for_each_batch_list).mean()
+        train_loss_for_each_epoch_list.append(avg_loss_for_each_epoch)
+
+
+    x_list = range(len(train_loss_for_each_epoch_list))
     title = "Train loss of each epoch"
     x_label = "Epoch number"
-    draw_train_loss_chart(train_loss_for_each_epoch_list, x_label, title)
+    y_label = "Loss"
+    save_path = os.path.join("./result", "Train_loss.png")
+    draw_line_chart(x_list, train_loss_for_each_epoch_list, title, x_label, y_label, save_path)
+
     return net
 
 
-def draw_train_loss_chart(train_loss_list, x_label, title):
-    plt.figure()
-    plt.plot(range(len(train_loss_list)), train_loss_list)
-    plt.title(title)
-    plt.xlabel(x_label)
-    plt.ylabel("Loss")
-    # plt.xticks(fontsize=14)
-    # plt.yticks(fontsize=14)
-    plt.tight_layout()
-    plt.show()
-    # plt.savefig(os.path.join(opts.checkpoint_path, "loss_plot.pdf"))
-    # plt.close()
 
 
 def evaluation(net, test_data_loader):
@@ -253,15 +250,20 @@ def evaluation(net, test_data_loader):
 
 
 def main():
-    pain_detector = PainDetector(image_size=ARGS.image_size, checkpoint_path='checkpoints/59448122/59448122_3/model_epoch13.pt', num_outputs=ARGS.number_output)
+    # pain_detector = PainDetector(image_size=ARGS.image_size, checkpoint_path='checkpoints/59448122/59448122_3/model_epoch13.pt', num_outputs=ARGS.number_output)
 
     create_data_csv(DATA_CSV_PATH, DATA_SUMMARY_CSV_PATH, ARGS)
+    split_dataset(DATA_CSV_PATH, TRAIN_DATA_CSV_PATH, TEST_DATA_CSV_PATH, RANDOM_SEED, TRAIN_FRACTION)
 
-    train_data_loader = create_data_loader(TRAIN_DATA_CSV_PATH, pain_detector, True, ARGS)
-    test_data_loader = create_data_loader(TEST_DATA_CSV_PATH, pain_detector, True, ARGS)
+    # MyDataset(TRAIN_DATA_CSV_PATH, ARGS)
 
-    net = train(train_data_loader, ARGS)
-    evaluation(net, test_data_loader)
+
+
+    # train_data_loader = create_data_loader(TRAIN_DATA_CSV_PATH, pain_detector, True, ARGS)
+    # test_data_loader = create_data_loader(TEST_DATA_CSV_PATH, pain_detector, True, ARGS)
+
+    net = train(TRAIN_DATA_CSV_PATH, ARGS)
+    evaluation(net, TEST_DATA_CSV_PATH)
 
 
 

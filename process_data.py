@@ -12,8 +12,8 @@ import matplotlib.image as mpimg
 # from pain_detector import PainDetector
 
 # global variables
-PSPI_DIR = './test/Frame_Labels/Frame_Labels/PSPI'
-IMAGES_DIR = './test/Images/Images'
+PSPI_DIR = './data/Frame_Labels/Frame_Labels/PSPI'
+IMAGES_DIR = './data/Images/Images'
 DATA_SUMMARY_CSV = 'data_summary.csv'
 
 
