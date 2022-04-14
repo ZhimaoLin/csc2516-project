@@ -1,3 +1,6 @@
+import torch
+import torch.optim as optim
+from torch import nn
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -34,6 +37,26 @@ def draw_line_chart(x_list, y_list, title, x_label, y_label, save_path, is_show=
         plt.show()
     plt.savefig(save_path)
     plt.close()  
+
+
+def save_trained_model(model, path):
+    torch.save(model.state_dict(), path)
+
+def load_trained_model(path, create_model_function, ops):
+    trained_model = create_model_function(ops)
+    trained_model.load_state_dict(torch.load(path))
+    trained_model.eval()
+    return trained_model
+
+
+def sample_data(data_path, n, random_state):
+    df = pd.read_csv(data_path)
+    train_df = df.sample(n=n, random_state=random_state)
+    train_df.to_csv(data_path, index=False)
+
+
+
+
 
 
 # y_list = [10, 9,8,7,6,5,4,3,2,1]

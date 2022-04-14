@@ -11,11 +11,16 @@ from torchvision import models, transforms
 from MyDataset import *
 import matplotlib.pyplot as plt
 
+import time
+
 
 
 DATA_SUMMARY_CSV_PATH = '../data_summary.csv'
 TRAIN_DATA_CSV_PATH = 'train_data.csv'
 TEST_DATA_CSV_PATH = 'test_data.csv'
+
+RESULT_PATH = "result"
+
 TRAIN_FRACTION = 0.8
 RANDOM_SEED = 1
 
@@ -48,7 +53,7 @@ args_dict = {
     'overall_learning_rate': 0.00001,
     'last_layer_learning_rate': 0.0001,
     'weight_decay': 0.0005,
-    'epoch': 1
+    'epoch': 2
 
 
 }
@@ -113,9 +118,12 @@ def train(train_data_path, ops):
     train_data = MyDataset(train_data_path, ops, transform=transform_function)
     train_data_loader = torch.utils.data.DataLoader(train_data, batch_size=ops.batch_size, shuffle=True)
 
+    train_loss_for_each_epoch_list = []
+
     for epoch in range(ops.epoch):
         print(f"Epoch {epoch+1}/{ops.epoch}")
         print('-' * 10)
+        train_loss_for_each_batch_list = []
 
         for i_batch, sample_batched in enumerate(train_data_loader):
             net.zero_grad()
@@ -132,15 +140,91 @@ def train(train_data_path, ops):
                 loss.backward()
                 optimizer_ft.step()
 
+            train_loss_for_each_batch_list.append(loss.item())
             print(f"Batch index [{i_batch}], Train loss is [{loss}]")
 
+        x_list = range(len(train_loss_for_each_batch_list))
+        title = f"Epoch={epoch}, Train loss of each batch"
+        x_label = "Batch number"
+        y_label = "Loss"
+        save_path = os.path.join(RESULT_PATH, f"Epoch_{epoch+1}_loss.png")
+        draw_line_chart(x_list, train_loss_for_each_batch_list, title, x_label, y_label, save_path)
 
+        avg_loss_for_each_epoch = np.array(train_loss_for_each_batch_list).mean()
+        train_loss_for_each_epoch_list.append(avg_loss_for_each_epoch)
+
+
+    x_list = range(len(train_loss_for_each_epoch_list))
+    title = "Train loss of each epoch"
+    x_label = "Epoch number"
+    y_label = "Loss"
+    save_path = os.path.join(RESULT_PATH, "Train_loss.png")
+    draw_line_chart(x_list, train_loss_for_each_epoch_list, title, x_label, y_label, save_path)
+
+    return net
+
+
+
+def evaluation(net, test_data_path, ops):
+    transform_function = transforms.Compose([
+        transforms.ToPILImage(),
+        transforms.Resize(ops.image_scale_to_before_crop), # 256
+        transforms.CenterCrop(ops.image_size), # 224
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor(),
+        transforms.Normalize([0.3873985 , 0.42637664, 0.53720075], [0.2046528 , 0.19909547, 0.19015081])
+    ])
+
+    test_dataset = MyDataset(test_data_path, ops, transform=transform_function)
+    test_data_loader = torch.utils.data.DataLoader(test_dataset, batch_size=ops.batch_size, shuffle=True)
+
+    mse_loss = nn.MSELoss()
+
+    total_number_batch = 0
+    total_loss = 0
+    for i_batch, sample_batched in enumerate(test_data_loader):
+        
+        with torch.set_grad_enabled(False):
+            X, y = sample_batched[0], sample_batched[1]
+
+            if torch.cuda.is_available():
+                X = X.cuda().float()
+                y = y.cuda().view((-1, 1)).float()
+                # print(f"Move data to GPU")
+
+            output = net(X)
+            loss = mse_loss(output, y)
+
+        total_loss += loss.item()
+        total_number_batch += 1
+
+    avg_loss = total_loss / total_number_batch
+    print(f"Average loss is [{avg_loss}]")
 
 
 
 def main():
     split_dataset(DATA_SUMMARY_CSV_PATH, TRAIN_DATA_CSV_PATH, TEST_DATA_CSV_PATH, RANDOM_SEED, train_fraction=TRAIN_FRACTION)
-    train(TRAIN_DATA_CSV_PATH, ARGS)
+
+    # region Test Code
+    sample_data(TRAIN_DATA_CSV_PATH, 500, RANDOM_SEED)
+    # endregion
+
+    start = time.time()
+    net = train(TRAIN_DATA_CSV_PATH, ARGS)
+    end = time.time()
+    print(f"Runtime of the program is [{end - start}] seconds")
+
+    model_path = os.path.join(RESULT_PATH, "model.pt")
+    save_trained_model(net, model_path)
+
+    old_model = load_trained_model(model_path, create_model, ARGS)
+
+    # region Test Code
+    sample_data(TEST_DATA_CSV_PATH, 100, RANDOM_SEED)
+    # endregion
+
+    evaluation(old_model, TEST_DATA_CSV_PATH, ARGS)
 
 
 

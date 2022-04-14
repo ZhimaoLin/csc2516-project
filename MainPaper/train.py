@@ -22,6 +22,8 @@ DATA_CSV_HEADER = ("reference_image_path", "target_image_path", "pspi_score")
 TRAIN_DATA_CSV_PATH = 'train_data.csv'
 TEST_DATA_CSV_PATH = 'test_data.csv'
 
+RESULT_PATH = "result"
+
 TRAIN_FRACTION = 0.8
 RANDOM_SEED = 1
 
@@ -56,7 +58,7 @@ args_dict = {
     'drop_out': 0,
     'fc2_size': 200,
     'learning_rate': 0.001,
-    'epoch': 10
+    'epoch': 2
 }
 ARGS.update(args_dict)
 #endregion
@@ -147,15 +149,15 @@ def train(train_data_path, ops):
                 loss.backward()
                 optimizer.step()
 
-                train_loss_for_each_batch_list.append(loss.item())
-                print(f"Batch index [{i_batch}], Train loss is [{loss.item()}]")
+            train_loss_for_each_batch_list.append(loss.item())
+            print(f"Batch index [{i_batch}], Train loss is [{loss.item()}]")
 
         
         x_list = range(len(train_loss_for_each_batch_list))
         title = f"Epoch={epoch}, Train loss of each batch"
         x_label = "Batch number"
         y_label = "Loss"
-        save_path = os.path.join("./result", f"Epoch_{epoch+1}_loss.png")
+        save_path = os.path.join(RESULT_PATH, f"Epoch_{epoch+1}_loss.png")
         draw_line_chart(x_list, train_loss_for_each_batch_list, title, x_label, y_label, save_path)
 
         avg_loss_for_each_epoch = np.array(train_loss_for_each_batch_list).mean()
@@ -166,7 +168,7 @@ def train(train_data_path, ops):
     title = "Train loss of each epoch"
     x_label = "Epoch number"
     y_label = "Loss"
-    save_path = os.path.join("./result", "Train_loss.png")
+    save_path = os.path.join(RESULT_PATH, "Train_loss.png")
     draw_line_chart(x_list, train_loss_for_each_epoch_list, title, x_label, y_label, save_path)
 
     return net
@@ -195,12 +197,10 @@ def evaluation(net, test_data_path, ops):
             output = net(X, return_features=False)
             loss = mse_loss(output, y)
 
-            total_loss += loss.item()
-
+        total_loss += loss.item()
         total_number_batch += 1
 
     avg_loss = total_loss / total_number_batch
-
     print(f"Average loss is [{avg_loss}]")
 
 
@@ -209,13 +209,20 @@ def main():
     create_data_csv(DATA_CSV_PATH, DATA_SUMMARY_CSV_PATH, ARGS)
     split_dataset(DATA_CSV_PATH, TRAIN_DATA_CSV_PATH, TEST_DATA_CSV_PATH, RANDOM_SEED, TRAIN_FRACTION)
 
+    sample_data(TRAIN_DATA_CSV_PATH, 250, RANDOM_SEED)
+
     start = time.time()
     net = train(TRAIN_DATA_CSV_PATH, ARGS)
     end = time.time()
-    print(f"Runtime of the program is {end - start}")
+    print(f"Runtime of the program is [{end - start}] seconds")
 
+    model_path = os.path.join(RESULT_PATH, "model.pt")
+    save_trained_model(net, model_path)
 
-    evaluation(net, TEST_DATA_CSV_PATH, ARGS)
+    old_model = load_trained_model(model_path, create_model, ARGS)
+    sample_data(TEST_DATA_CSV_PATH, 100, RANDOM_SEED)
+
+    evaluation(old_model, TEST_DATA_CSV_PATH, ARGS)
 
 
 
