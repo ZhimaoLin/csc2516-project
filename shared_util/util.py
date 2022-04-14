@@ -33,7 +33,7 @@ def draw_line_chart(x_list, y_list, title, x_label, y_label, save_path, is_show=
     if is_show:
         plt.show()
     plt.savefig(save_path)
-    # plt.close()  
+    plt.close()  
 
 
 # y_list = [10, 9,8,7,6,5,4,3,2,1]
