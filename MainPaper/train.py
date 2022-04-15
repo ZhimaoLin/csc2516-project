@@ -220,7 +220,9 @@ def main():
     create_data_csv(DATA_CSV_PATH, DATA_SUMMARY_CSV_PATH, ARGS)
     split_dataset(DATA_CSV_PATH, TRAIN_DATA_CSV_PATH, TEST_DATA_CSV_PATH, RANDOM_SEED, TRAIN_FRACTION)
 
+    # region Test Code
     sample_data(TRAIN_DATA_CSV_PATH, 1000, RANDOM_SEED)
+    # endregion
 
     start = time.time()
     net = train(TRAIN_DATA_CSV_PATH, ARGS)
@@ -231,7 +233,10 @@ def main():
     save_trained_model(net, model_path)
 
     old_model = load_trained_model(model_path, create_model, ARGS)
+
+    # region Test Code
     sample_data(TEST_DATA_CSV_PATH, 100, RANDOM_SEED)
+    # endregion
 
     evaluation(old_model, TEST_DATA_CSV_PATH, ARGS)
 
