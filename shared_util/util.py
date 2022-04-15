@@ -3,6 +3,10 @@ import torch.optim as optim
 from torch import nn
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
+
+from sklearn.metrics import f1_score, accuracy_score
+from scipy.stats import pearsonr
 
 
 # Write a row to a file. The row has to be a tuple of strings
@@ -55,16 +59,23 @@ def sample_data(data_path, n, random_state):
     train_df.to_csv(data_path, index=False)
 
 
+def calculate_accuracy_score(y_true, y_pred):
+    y_true = np.array(y_true).round()
+    y_pred = np.array(y_pred).round()
+    result = accuracy_score(y_true, y_pred)
+    return result
 
+def calculate_pearson_correlation(x, y):
+    result = pearsonr(x, y)
+    return result
 
+def calculate_f1_score(y_true, y_pred, threshold):
+    y_true = np.array(y_true)
+    y_pred = np.array(y_pred)
 
+    y_true = y_true > threshold
+    y_pred = y_pred > threshold
 
-# y_list = [10, 9,8,7,6,5,4,3,2,1]
-# x_list = range(len(y_list))
-# title = "Title"
-# x_label = "x_lable"
-# y_label = "y_lable"
-# save_path = "foo.png"
-# is_show = True
-# draw_train_loss_chart(x_list, y_list, title, x_label, y_label, save_path, is_show=False)
+    result = f1_score(y_true, y_pred)
+    return result
 

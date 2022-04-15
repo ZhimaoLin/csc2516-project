@@ -182,8 +182,10 @@ def evaluation(net, test_data_path, ops):
 
     mse_loss = nn.MSELoss()
 
-    total_number_batch = 0
-    total_loss = 0
+    loss_list = []
+    prediction_list = []
+    truth_list = []
+
     for i_batch, sample_batched in enumerate(test_data_loader):
         
         with torch.set_grad_enabled(False):
@@ -197,11 +199,20 @@ def evaluation(net, test_data_path, ops):
             output = net(X, return_features=False)
             loss = mse_loss(output, y)
 
-        total_loss += loss.item()
-        total_number_batch += 1
+        loss_list.append(loss.item())
+        
+        prediction_list += output.squeeze().tolist()
+        truth_list += y.squeeze().tolist()
 
-    avg_loss = total_loss / total_number_batch
+    avg_loss = np.array(loss_list).mean()
+    accuracy = calculate_accuracy_score(truth_list, prediction_list)
+    correlation = calculate_pearson_correlation(prediction_list, truth_list)
+    f1 = calculate_f1_score(truth_list, prediction_list, 2)
+
     print(f"Average loss is [{avg_loss}]")
+    print(f"Accuracy score is [{accuracy}]")
+    print(f"Pearson correlation score is [{correlation}]")
+    print(f"F1 score is [{f1}]")
 
 
 
@@ -209,7 +220,7 @@ def main():
     create_data_csv(DATA_CSV_PATH, DATA_SUMMARY_CSV_PATH, ARGS)
     split_dataset(DATA_CSV_PATH, TRAIN_DATA_CSV_PATH, TEST_DATA_CSV_PATH, RANDOM_SEED, TRAIN_FRACTION)
 
-    sample_data(TRAIN_DATA_CSV_PATH, 250, RANDOM_SEED)
+    sample_data(TRAIN_DATA_CSV_PATH, 1000, RANDOM_SEED)
 
     start = time.time()
     net = train(TRAIN_DATA_CSV_PATH, ARGS)
