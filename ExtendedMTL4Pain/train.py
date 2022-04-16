@@ -46,14 +46,16 @@ def print_opts(opts):
 
 ARGS = AttrDict()
 args_dict = {
-    'image_scale_to_before_crop': 256,
+    'image_scale_to_before_crop': 256, # 300 is better
     'image_size': 160,
     'number_output':1,
     'batch_size': 50,  
     'overall_learning_rate': 0.00001,
     'last_layer_learning_rate': 0.0001,
     'weight_decay': 0.0005,
-    'epoch': 2
+    'epoch': 3,
+    'train_sample': 5000,
+    'test_sample': 300
 }
 ARGS.update(args_dict)
 #endregion
@@ -215,13 +217,15 @@ def main():
     split_dataset(DATA_SUMMARY_CSV_PATH, TRAIN_DATA_CSV_PATH, TEST_DATA_CSV_PATH, RANDOM_SEED, train_fraction=TRAIN_FRACTION)
 
     # region Test Code
-    sample_data(TRAIN_DATA_CSV_PATH, 50, RANDOM_SEED)
+    sample_data(TRAIN_DATA_CSV_PATH, ARGS.train_sample, RANDOM_SEED)
     # endregion
+
+    print_opts(ARGS)
 
     start = time.time()
     net = train(TRAIN_DATA_CSV_PATH, ARGS)
     end = time.time()
-    print(f"Runtime of the program is [{end - start}] seconds")
+    print(f"Runtime of the program is [{(end - start)/60}] minutes")
 
     model_path = os.path.join(RESULT_PATH, "model.pt")
     save_trained_model(net, model_path)
@@ -229,7 +233,7 @@ def main():
     old_model = load_trained_model(model_path, create_model, ARGS)
 
     # region Test Code
-    sample_data(TEST_DATA_CSV_PATH, 50, RANDOM_SEED)
+    sample_data(TEST_DATA_CSV_PATH, ARGS.test_sample, RANDOM_SEED)
     # endregion
 
     evaluation(old_model, TEST_DATA_CSV_PATH, ARGS)

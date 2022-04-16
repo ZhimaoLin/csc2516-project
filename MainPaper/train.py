@@ -54,11 +54,13 @@ args_dict = {
     'image_size': 160,
     'number_output': 1,
     'image_sample_size': 5,
-    'batch_size': 50,  
+    'batch_size': 100,  
     'drop_out': 0,
     'fc2_size': 200,
     'learning_rate': 0.001,
-    'epoch': 2
+    'epoch': 3,
+    'train_sample': 3000,
+    'test_sample': 150
 }
 ARGS.update(args_dict)
 #endregion
@@ -221,24 +223,32 @@ def main():
     split_dataset(DATA_CSV_PATH, TRAIN_DATA_CSV_PATH, TEST_DATA_CSV_PATH, RANDOM_SEED, TRAIN_FRACTION)
 
     # region Test Code
-    sample_data(TRAIN_DATA_CSV_PATH, 1000, RANDOM_SEED)
+    sample_data(TRAIN_DATA_CSV_PATH, ARGS.train_sample, RANDOM_SEED)
     # endregion
 
-    start = time.time()
-    net = train(TRAIN_DATA_CSV_PATH, ARGS)
-    end = time.time()
-    print(f"Runtime of the program is [{end - start}] seconds")
+    for dropout in [0, 0.25]:
+        ARGS.drop_out = dropout
+        global RESULT_PATH
+        RESULT_PATH = "result"
+        RESULT_PATH = os.path.join(RESULT_PATH, f"dropout_{dropout}")
 
-    model_path = os.path.join(RESULT_PATH, "model.pt")
-    save_trained_model(net, model_path)
 
-    old_model = load_trained_model(model_path, create_model, ARGS)
+        start = time.time()
+        print_opts(ARGS)
+        net = train(TRAIN_DATA_CSV_PATH, ARGS)
+        end = time.time()
+        print(f"Runtime of the program is [{(end - start)/60}] minutes")
 
-    # region Test Code
-    sample_data(TEST_DATA_CSV_PATH, 100, RANDOM_SEED)
-    # endregion
+        model_path = os.path.join(RESULT_PATH, "model.pt")
+        save_trained_model(net, model_path)
 
-    evaluation(old_model, TEST_DATA_CSV_PATH, ARGS)
+        old_model = load_trained_model(model_path, create_model, ARGS)
+
+        # region Test Code
+        sample_data(TEST_DATA_CSV_PATH, ARGS.test_sample, RANDOM_SEED)
+        # endregion
+
+        evaluation(old_model, TEST_DATA_CSV_PATH, ARGS)
 
 
 
