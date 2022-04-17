@@ -1,40 +1,84 @@
 # csc2516-project
 
+The purpose of this project is to compare the following papers:
 
-## Data Cleaning 
-Those images are pure black images
-Skip image: [D:\Workspace\csc2516-project\data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff002.png]
-Skip image: [D:\Workspace\csc2516-project\data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff005.png]
-Skip image: [D:\Workspace\csc2516-project\data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff006.png]
-Skip image: [D:\Workspace\csc2516-project\data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff007.png]
-Skip image: [D:\Workspace\csc2516-project\data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff008.png]
-Skip image: [D:\Workspace\csc2516-project\data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff009.png]
-Skip image: [D:\Workspace\csc2516-project\data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff019.png]
-Skip image: [D:\Workspace\csc2516-project\data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff022.png]
-Skip image: [D:\Workspace\csc2516-project\data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff025.png]
-Skip image: [D:\Workspace\csc2516-project\data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff028.png]
-Skip image: [D:\Workspace\csc2516-project\data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff039.png]
-Skip image: [D:\Workspace\csc2516-project\data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff052.png]
-Skip image: [D:\Workspace\csc2516-project\data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff070.png]
-Skip image: [D:\Workspace\csc2516-project\data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff241.png]
-Skip image: [D:\Workspace\csc2516-project\data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff242.png]
-Skip image: [D:\Workspace\csc2516-project\data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff243.png]
-Skip image: [D:\Workspace\csc2516-project\data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff244.png]
-Skip image: [D:\Workspace\csc2516-project\data\Images\Images\059-fn059\fn059t2aiaff\fn059t2aiaff339.png]
-Warning: No faces were detected.
-Skip image: [D:\Workspace\csc2516-project\data\Images\Images\095-tv095\tv095t2aeunaff\tv095t2aeunaff001.png]
-Warning: No faces were detected.
-Skip image: [D:\Workspace\csc2516-project\data\Images\Images\095-tv095\tv095t2aeunaff\tv095t2aeunaff002.png]
-Warning: No faces were detected.
-Skip image: [D:\Workspace\csc2516-project\data\Images\Images\095-tv095\tv095t2aeunaff\tv095t2aeunaff003.png]
-Warning: No faces were detected.
-Skip image: [D:\Workspace\csc2516-project\data\Images\Images\095-tv095\tv095t2aeunaff\tv095t2aeunaff004.png]
-Warning: No faces were detected.
-Skip image: [D:\Workspace\csc2516-project\data\Images\Images\095-tv095\tv095t2aeunaff\tv095t2aeunaff005.png]
-Warning: No faces were detected.
-Skip image: [D:\Workspace\csc2516-project\data\Images\Images\095-tv095\tv095t2aeunaff\tv095t2aeunaff006.png]
-Warning: No faces were detected.
-Skip image: [D:\Workspace\csc2516-project\data\Images\Images\095-tv095\tv095t2aeunaff\tv095t2aeunaff007.png]
+- Unobtrusive Pain Monitoring in Older Adults With Dementia Using Pairwise and Contrastive Training
+  - Paper link: [https://ieeexplore.ieee.org/document/9298886](https://ieeexplore.ieee.org/document/9298886)
+  - GitHub repo: [https://github.com/TaatiTeam/pain_detection_demo.git](https://github.com/TaatiTeam/pain_detection_demo.git)
+- Unobtrusive Pain Monitoring in Older Adults With Dementia Using Pairwise and Contrastive Training
+  - Paper link: [https://proceedings.mlr.press/v116/xu20a.html](https://proceedings.mlr.press/v116/xu20a.html)
+  - GitHub repo: [https://github.com/xiaojngxu/ExtendedMTL4Pain.git](https://github.com/xiaojngxu/ExtendedMTL4Pain.git)
+
+## Data 
+
+We use a new data set to compare those models in the paper. The data can be downloaded from [here](https://www.kaggle.com/datasets/coder98/emotionpain).
+
+You need to download the `archive.zip` file from [Kaggle](https://www.kaggle.com/datasets/coder98/emotionpain) to the `csc2516-project/data` folder. Then, extract the zip file to the `data` folder. The structure of the `data` folder should look like the following:
+
+```
+data
+  |--Frame_Labels
+    |--Frame_Labels
+      |--FACS
+        |--042-ll042
+        |-- ......
+      |--PSPI
+        |--042-ll042
+        |-- ......
+  |--Images
+    |--Images
+      |--042-ll042
+      |-- ......
+```
+
+### Data Cleaning 
+
+It cannot detect faces from the following images:
+
+- Skip image: `data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff002.png`
+- Skip image: `data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff005.png`
+- Skip image: `data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff006.png`
+- Skip image: `data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff007.png`
+- Skip image: `data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff008.png`
+- Skip image: `data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff009.png`
+- Skip image: `data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff019.png`
+- Skip image: `data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff022.png`
+- Skip image: `data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff025.png`
+- Skip image: `data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff028.png`
+- Skip image: `data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff039.png`
+- Skip image: `data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff052.png`
+- Skip image: `data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff070.png`
+- Skip image: `data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff241.png`
+- Skip image: `data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff242.png`
+- Skip image: `data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff243.png`
+- Skip image: `data\Images\Images\059-fn059\fn059t2afunaff\fn059t2afunaff244.png`
+- Skip image: `data\Images\Images\059-fn059\fn059t2aiaff\fn059t2aiaff339.png`
+
+The following images are pure black:
+
+  - Skip image: `data\Images\Images\095-tv095\tv095t2aeunaff\tv095t2aeunaff001.png`
+  - Skip image: `data\Images\Images\095-tv095\tv095t2aeunaff\tv095t2aeunaff002.png`
+  - Skip image: `data\Images\Images\095-tv095\tv095t2aeunaff\tv095t2aeunaff003.png`
+  - Skip image: `data\Images\Images\095-tv095\tv095t2aeunaff\tv095t2aeunaff004.png`
+  - Skip image: `data\Images\Images\095-tv095\tv095t2aeunaff\tv095t2aeunaff005.png`
+  - Skip image: `data\Images\Images\095-tv095\tv095t2aeunaff\tv095t2aeunaff006.png`
+  - Skip image: `data\Images\Images\095-tv095\tv095t2aeunaff\tv095t2aeunaff007.png`
+
+## Development Environment
+
+| Operating System | CPU              | GPU                                  | CUDA Version | PyTorch Version |
+| ---------------- | ---------------- | ------------------------------------ | ------------ | --------------- |
+| Windows 10 Pro   | AMD Ryzen 7 1700 | NVIDIA GeForce GTX 1080 (8GB memory) | 11.6.124     | 1.10.0          |
+
+### Install Packages
+
+Run `pip install -r requirements.txt`
+
+This will install all the necessary packages.
+
+## How to run the code
+
+
 
 ## References
 
