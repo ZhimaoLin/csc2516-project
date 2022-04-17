@@ -78,21 +78,38 @@ This will install all the necessary packages.
 
 ## How to run the code
 
+### Step 1
 
+Run `python process_data.py`
+
+This will create a `data_summary.csv` file, it will fill the data into the following table:
+
+| person_name | video_name   | frame_number | pspi_score | image_path                                                    |
+| ----------- | ------------ | ------------ | ---------- | ------------------------------------------------------------- |
+| 042-ll042   | ll042t1aaaff | 001          | 0.0        | data\Images\Images\042-ll042\ll042t1aaaff\ll042t1aaaff001.png |
+| ...         | ...          | ...          | ...        | ...                                                           |
+
+### Step 2
+
+Main paper
+
+### Step 3
+
+Extended paper
 
 ## References
 
 Pytorch official document
-https://pytorch.org/tutorials/beginner/data_loading_tutorial.html 
+[https://pytorch.org/tutorials/beginner/data_loading_tutorial.html](https://pytorch.org/docs/stable/index.html)
 
 Pandas official document
-https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.sample.html 
+[https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.sample.html](https://pandas.pydata.org/docs/)
 
 Programming assignment 4
-https://colab.research.google.com/github/uoft-csc413/2022/blob/master/assets/assignments/a4_dcgan.ipynb
+[https://colab.research.google.com/github/uoft-csc413/2022/blob/master/assets/assignments/a4_dcgan.ipynb](https://colab.research.google.com/github/uoft-csc413/2022/blob/master/assets/assignments/a4_dcgan.ipynb)
 
 Course material 
-https://uoft-csc413.github.io/2022/
+[https://uoft-csc413.github.io/2022/](https://uoft-csc413.github.io/2022/)
 
 PyTorch YouTube tutorial 
-https://youtu.be/BzcBsTou0C0 
+[https://youtu.be/BzcBsTou0C0](https://youtu.be/BzcBsTou0C0)
