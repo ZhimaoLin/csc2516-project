@@ -43,8 +43,8 @@ def print_opts(opts):
     print('Opts'.center(80))
     print('-' * 80)
     for key in opts.__dict__:
-        if opts.__dict__[key]:
-            print('{:>30}: {:<30}'.format(key, opts.__dict__[key]).center(80))
+        # if opts.__dict__[key]:
+        print('{:>30}: {:<30}'.format(key, opts.__dict__[key]).center(80))
     print('=' * 80)
 
 
@@ -226,15 +226,18 @@ def main():
     sample_data(TRAIN_DATA_CSV_PATH, ARGS.train_sample, RANDOM_SEED)
     # endregion
 
-    for dropout in [0, 0.25]:
-        ARGS.drop_out = dropout
+    for batch_size in [50, 100, 150, 200]:
+        ARGS.batch_size = batch_size
         global RESULT_PATH
         RESULT_PATH = "result"
-        RESULT_PATH = os.path.join(RESULT_PATH, f"dropout_{dropout}")
+        RESULT_PATH = os.path.join(RESULT_PATH, f"batch_size_{batch_size}")
 
+        if not os.path.isdir(RESULT_PATH):
+            os.mkdir(RESULT_PATH)
+
+        print_opts(ARGS)
 
         start = time.time()
-        print_opts(ARGS)
         net = train(TRAIN_DATA_CSV_PATH, ARGS)
         end = time.time()
         print(f"Runtime of the program is [{(end - start)/60}] minutes")

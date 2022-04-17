@@ -39,14 +39,14 @@ def print_opts(opts):
     print('Opts'.center(80))
     print('-' * 80)
     for key in opts.__dict__:
-        if opts.__dict__[key]:
-            print('{:>30}: {:<30}'.format(key, opts.__dict__[key]).center(80))
+        # if opts.__dict__[key]:
+        print('{:>30}: {:<30}'.format(key, opts.__dict__[key]).center(80))
     print('=' * 80)
 
 
 ARGS = AttrDict()
 args_dict = {
-    'image_scale_to_before_crop': 256, # 300 is better
+    'image_scale_to_before_crop': 256, # 300 is better old = 256
     'image_size': 160,
     'number_output':1,
     'batch_size': 50,  
@@ -54,8 +54,8 @@ args_dict = {
     'last_layer_learning_rate': 0.0001,
     'weight_decay': 0.0005,
     'epoch': 3,
-    'train_sample': 5000,
-    'test_sample': 300
+    'train_sample': 3000,
+    'test_sample': 150
 }
 ARGS.update(args_dict)
 #endregion
@@ -220,23 +220,32 @@ def main():
     sample_data(TRAIN_DATA_CSV_PATH, ARGS.train_sample, RANDOM_SEED)
     # endregion
 
-    print_opts(ARGS)
+    for last_layer_learning_rate in [0.001, 0.0001, 0.00001]:
+        ARGS.last_layer_learning_rate = last_layer_learning_rate
+        global RESULT_PATH
+        RESULT_PATH = "result"
+        RESULT_PATH = os.path.join(RESULT_PATH, f"last_layer_learning_rate_{last_layer_learning_rate}")
 
-    start = time.time()
-    net = train(TRAIN_DATA_CSV_PATH, ARGS)
-    end = time.time()
-    print(f"Runtime of the program is [{(end - start)/60}] minutes")
+        if not os.path.isdir(RESULT_PATH):
+            os.mkdir(RESULT_PATH)
 
-    model_path = os.path.join(RESULT_PATH, "model.pt")
-    save_trained_model(net, model_path)
+        print_opts(ARGS)
 
-    old_model = load_trained_model(model_path, create_model, ARGS)
+        start = time.time()
+        net = train(TRAIN_DATA_CSV_PATH, ARGS)
+        end = time.time()
+        print(f"Runtime of the program is [{(end - start)/60}] minutes")
 
-    # region Test Code
-    sample_data(TEST_DATA_CSV_PATH, ARGS.test_sample, RANDOM_SEED)
-    # endregion
+        # model_path = os.path.join(RESULT_PATH, "model.pt")
+        # save_trained_model(net, model_path)
 
-    evaluation(old_model, TEST_DATA_CSV_PATH, ARGS)
+        # old_model = load_trained_model(model_path, create_model, ARGS)
+
+        # region Test Code
+        sample_data(TEST_DATA_CSV_PATH, ARGS.test_sample, RANDOM_SEED)
+        # endregion
+
+        evaluation(net, TEST_DATA_CSV_PATH, ARGS) 
 
 
 
