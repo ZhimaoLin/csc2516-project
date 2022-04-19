@@ -46,7 +46,7 @@ def print_opts(opts):
 
 ARGS = AttrDict()
 args_dict = {
-    'image_scale_to_before_crop': 200, # 300 is better old = 256
+    'image_scale_to_before_crop': 200,
     'image_size': 160,
     'number_output':1,
     'batch_size': 50,  
