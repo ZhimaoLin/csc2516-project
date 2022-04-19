@@ -46,16 +46,17 @@ def print_opts(opts):
 
 ARGS = AttrDict()
 args_dict = {
-    'image_scale_to_before_crop': 256, # 300 is better old = 256
+    'image_scale_to_before_crop': 200, # 300 is better old = 256
     'image_size': 160,
     'number_output':1,
     'batch_size': 50,  
-    'overall_learning_rate': 0.00001,
-    'last_layer_learning_rate': 0.0001,
+    'overall_learning_rate': 0.0001,
+    'last_layer_learning_rate': 0.001,
     'weight_decay': 0.0005,
-    'epoch': 3,
-    'train_sample': 3000,
-    'test_sample': 150
+    'epoch': 5,
+    # For testing the code
+    'train_sample': 150,
+    'test_sample': 50
 }
 ARGS.update(args_dict)
 #endregion
@@ -217,35 +218,35 @@ def main():
     split_dataset(DATA_SUMMARY_CSV_PATH, TRAIN_DATA_CSV_PATH, TEST_DATA_CSV_PATH, RANDOM_SEED, train_fraction=TRAIN_FRACTION)
 
     # region Test Code
-    sample_data(TRAIN_DATA_CSV_PATH, ARGS.train_sample, RANDOM_SEED)
+    # sample_data(TRAIN_DATA_CSV_PATH, ARGS.train_sample, RANDOM_SEED)
     # endregion
 
-    for last_layer_learning_rate in [0.001, 0.0001, 0.00001]:
-        ARGS.last_layer_learning_rate = last_layer_learning_rate
-        global RESULT_PATH
-        RESULT_PATH = "result"
-        RESULT_PATH = os.path.join(RESULT_PATH, f"last_layer_learning_rate_{last_layer_learning_rate}")
+    # for batch_size in [50, 100, 150, 200]:
+    #     ARGS.batch_size = batch_size
+    #     global RESULT_PATH
+    #     RESULT_PATH = "result"
+    #     RESULT_PATH = os.path.join(RESULT_PATH, f"batch_size_{batch_size}")
 
-        if not os.path.isdir(RESULT_PATH):
-            os.mkdir(RESULT_PATH)
+    if not os.path.isdir(RESULT_PATH):
+        os.mkdir(RESULT_PATH)
 
-        print_opts(ARGS)
+    print_opts(ARGS)
 
-        start = time.time()
-        net = train(TRAIN_DATA_CSV_PATH, ARGS)
-        end = time.time()
-        print(f"Runtime of the program is [{(end - start)/60}] minutes")
+    start = time.time()
+    net = train(TRAIN_DATA_CSV_PATH, ARGS)
+    end = time.time()
+    print(f"Runtime of the program is [{(end - start)/60}] minutes")
 
-        # model_path = os.path.join(RESULT_PATH, "model.pt")
-        # save_trained_model(net, model_path)
+    model_path = os.path.join(RESULT_PATH, "model.pt")
+    save_trained_model(net, model_path)
 
-        # old_model = load_trained_model(model_path, create_model, ARGS)
+    # old_model = load_trained_model(model_path, create_model, ARGS)
 
-        # region Test Code
-        sample_data(TEST_DATA_CSV_PATH, ARGS.test_sample, RANDOM_SEED)
-        # endregion
+    # region Test Code
+    # sample_data(TEST_DATA_CSV_PATH, ARGS.test_sample, RANDOM_SEED)
+    # endregion
 
-        evaluation(net, TEST_DATA_CSV_PATH, ARGS) 
+    evaluation(net, TEST_DATA_CSV_PATH, ARGS) 
 
 
 
