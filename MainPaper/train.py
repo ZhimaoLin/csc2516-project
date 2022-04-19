@@ -227,12 +227,6 @@ def main():
     # sample_data(TRAIN_DATA_CSV_PATH, ARGS.train_sample, RANDOM_SEED)
     # endregion
 
-    # for batch_size in [50, 100, 150, 200]:
-    #     ARGS.batch_size = batch_size
-    #     global RESULT_PATH
-    #     RESULT_PATH = "result"
-    #     RESULT_PATH = os.path.join(RESULT_PATH, f"batch_size_{batch_size}")
-
     if not os.path.isdir(RESULT_PATH):
         os.mkdir(RESULT_PATH)
 
