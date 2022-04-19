@@ -154,16 +154,21 @@ sample_data(TEST_DATA_CSV_PATH, ARGS.test_sample, RANDOM_SEED)
 ## References
 
 Pytorch official document
-[https://pytorch.org/tutorials/beginner/data_loading_tutorial.html](https://pytorch.org/docs/stable/index.html)
+
+- [https://pytorch.org/tutorials/beginner/data_loading_tutorial.html](https://pytorch.org/docs/stable/index.html)
 
 Pandas official document
-[https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.sample.html](https://pandas.pydata.org/docs/)
+
+- [https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.sample.html](https://pandas.pydata.org/docs/)
 
 Course material 
-[https://uoft-csc413.github.io/2022/](https://uoft-csc413.github.io/2022/)
+
+- [https://uoft-csc413.github.io/2022/](https://uoft-csc413.github.io/2022/)
 
 Programming assignment 4
-[https://colab.research.google.com/github/uoft-csc413/2022/blob/master/assets/assignments/a4_dcgan.ipynb](https://colab.research.google.com/github/uoft-csc413/2022/blob/master/assets/assignments/a4_dcgan.ipynb)
+
+- [https://colab.research.google.com/github/uoft-csc413/2022/blob/master/assets/assignments/a4_dcgan.ipynb](https://colab.research.google.com/github/uoft-csc413/2022/blob/master/assets/assignments/a4_dcgan.ipynb)
 
 PyTorch YouTube tutorial 
-[https://youtu.be/BzcBsTou0C0](https://youtu.be/BzcBsTou0C0)
+
+- [https://youtu.be/BzcBsTou0C0](https://youtu.be/BzcBsTou0C0)
