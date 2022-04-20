@@ -5,9 +5,11 @@ The purpose of this project is to compare the following papers:
 - Unobtrusive Pain Monitoring in Older Adults With Dementia Using Pairwise and Contrastive Training (**main paper**)
   - Paper link: [https://ieeexplore.ieee.org/document/9298886](https://ieeexplore.ieee.org/document/9298886)
   - GitHub repo: [https://github.com/TaatiTeam/pain_detection_demo.git](https://github.com/TaatiTeam/pain_detection_demo.git)
+  - PDF: [https://tspace.library.utoronto.ca/bitstream/1807/104048/1/Dementia_Pain_Detection_TSpace.pdf](https://tspace.library.utoronto.ca/bitstream/1807/104048/1/Dementia_Pain_Detection_TSpace.pdf)
 - Unobtrusive Pain Monitoring in Older Adults With Dementia Using Pairwise and Contrastive Training (**ExtendedMTL4Pain**)
   - Paper link: [https://proceedings.mlr.press/v116/xu20a.html](https://proceedings.mlr.press/v116/xu20a.html)
   - GitHub repo: [https://github.com/xiaojngxu/ExtendedMTL4Pain.git](https://github.com/xiaojngxu/ExtendedMTL4Pain.git)
+  - PDF: [http://proceedings.mlr.press/v116/xu20a/xu20a.pdf](http://proceedings.mlr.press/v116/xu20a/xu20a.pdf)
 
 ## Data 
 
