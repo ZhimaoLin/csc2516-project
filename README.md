@@ -2,7 +2,7 @@
 
 The following two papers propose two pain detection algorithms using facial expression. The purpose of this project is to compare those two algorithms:
 
-- Unobtrusive Pain Monitoring in Older Adults With Dementia Using Pairwise and Contrastive Training (**main paper**)
+- Unobtrusive Pain Monitoring in Older Adults With Dementia Using Pairwise and Contrastive Training (**Main paper**)
   - Paper link: [https://ieeexplore.ieee.org/document/9298886](https://ieeexplore.ieee.org/document/9298886)
   - GitHub repo: [https://github.com/TaatiTeam/pain_detection_demo.git](https://github.com/TaatiTeam/pain_detection_demo.git)
   - PDF: [https://tspace.library.utoronto.ca/bitstream/1807/104048/1/Dementia_Pain_Detection_TSpace.pdf](https://tspace.library.utoronto.ca/bitstream/1807/104048/1/Dementia_Pain_Detection_TSpace.pdf)
